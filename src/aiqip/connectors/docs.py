@@ -1,7 +1,8 @@
 """Conga product documentation connector (documentation.conga.com, Heretto portal).
 
-The portal publishes per-product sitemaps and serves server-rendered HTML to crawlers that
-identify as bots, so pages can be indexed without a browser.
+The portal publishes per-product sitemaps (robots.txt allows all) and serves server-rendered
+article HTML. User agents it does not recognise as a modern browser get an "upgrade your
+browser" page instead, so the crawler sends a browser-compatible UA that still names itself.
 """
 
 from __future__ import annotations
@@ -15,7 +16,8 @@ from urllib.parse import urlparse
 
 import httpx
 
-USER_AGENT = "aiqip-indexer-bot/0.1 (+https://github.com/amvuggu-conga/AI-Engineering-Quality-and-Impact-platform)"
+USER_AGENT = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 "
+              "aiqip-indexer/0.1 (+https://github.com/amvuggu-conga/AI-Engineering-Quality-and-Impact-platform)")
 
 
 def slug_to_title(slug: str) -> str:
@@ -77,8 +79,7 @@ class DocsClient:
         return locs
 
     def fetch_page(self, url: str, retries: int = 4) -> dict[str, Any]:
-        """Fetch one page. The portal intermittently serves its client-side shell instead of the
-        rendered article; that response is detected and retried rather than indexed."""
+        """Fetch one page; a response without a rendered article (browser-upgrade page) is retried, never indexed."""
         page = page_from_url(url)
         for attempt in range(retries):
             try:

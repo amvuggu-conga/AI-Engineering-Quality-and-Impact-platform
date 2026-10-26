@@ -47,13 +47,17 @@ class KnowledgeBase:
         return len(self.docs)
 
     def search(self, query: str | list[str], areas: list[str] | None = None, top_k: int = 5) -> list[DocReference]:
-        hits = self.bm25.search(query, top_k=top_k * 6)
-        out: list[DocReference] = []
+        hits = self.bm25.search(query, top_k=top_k * 8)
+        best: dict[str, DocReference] = {}
         for url, score in hits:
             d = self.docs[url]
             if "release-notes" in url:
                 score *= 0.5
+            if "/preview/" in url:
+                score *= 0.95
             boost = 1.3 if areas and set(d["areas"]) & set(areas) else 1.0
-            out.append(DocReference(title=d["title"], url=url, area=(d["areas"] or [None])[0], score=round(score * boost, 2)))
-        out.sort(key=lambda r: r.score, reverse=True)
-        return out[:top_k]
+            ref = DocReference(title=d["title"], url=url, area=(d["areas"] or [None])[0], score=round(score * boost, 2))
+            key = d["title"].lower()
+            if key not in best or ref.score > best[key].score:
+                best[key] = ref
+        return sorted(best.values(), key=lambda r: r.score, reverse=True)[:top_k]

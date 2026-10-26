@@ -1,0 +1,335 @@
+{
+  "version": "0.1.0",
+  "generated_at": "2026-10-26 08:53 UTC",
+  "dry_run": true,
+  "issue": {
+    "key": "SYNTH-202",
+    "summary": "Renewed agreement keeps old end date when no term is provided",
+    "status": "Open",
+    "priority": "Critical",
+    "url": "https://example.atlassian.net/browse/SYNTH-202"
+  },
+  "business_behavior": "SYNTHETIC SAMPLE BUG. Customer renews an activated agreement from the agreement record without entering a term. The renewal succeeds but the agreement end date does not change, so the agreement expires on the original date.",
+  "repro_steps": [
+    "Open an activated agreement",
+    "Click Renew and leave Term (months) empty",
+    "Check the End Date on the renewed agreement"
+  ],
+  "customer_context": {
+    "Customer Account": "Synthetic Customer Inc.",
+    "Environment Type": "Production",
+    "Severity": "Sev 2",
+    "Priority": "Critical",
+    "Components": "Agreement Lifecycle",
+    "Affected versions": "2026.09",
+    "Labels": "customer_escalation, renewal"
+  },
+  "areas": [
+    [
+      "agreement-lifecycle",
+      8.25
+    ],
+    [
+      "amend-renew-terminate",
+      7.5
+    ],
+    [
+      "activation",
+      2.0
+    ],
+    [
+      "validation-rules",
+      1.75
+    ]
+  ],
+  "root_cause_hypothesis": "The reported behaviour falls in Agreement / Contract Lifecycle, Amend, Renew, Terminate & Expire. The most likely location is `src/Clm.Api/Services/RenewalService.cs` (IRenewalService, RenewalService, RenewAsync) in example-org/clm-api-sample, ranked first because: text relevance 14.5; same functional area: amend-renew-terminate; bug mentions RenewAsync.",
+  "confidence": "medium",
+  "code_candidates": [
+    {
+      "file": "src/Clm.Api/Services/RenewalService.cs",
+      "score": 30.53,
+      "reasons": [
+        "text relevance 14.5",
+        "same functional area: amend-renew-terminate",
+        "bug mentions RenewAsync"
+      ],
+      "symbols": [
+        "IRenewalService",
+        "RenewalService",
+        "RenewAsync"
+      ],
+      "repo": "example-org/clm-api-sample"
+    },
+    {
+      "file": "src/Clm.Api/Controllers/AgreementsController.cs",
+      "score": 13.95,
+      "reasons": [
+        "text relevance 6.1",
+        "same functional area: activation, agreement-lifecycle",
+        "serves an API route mentioned in the bug"
+      ],
+      "symbols": [
+        "AgreementsController"
+      ],
+      "repo": "example-org/clm-api-sample"
+    },
+    {
+      "file": "src/Clm.Api/appsettings.json",
+      "score": 9.92,
+      "reasons": [
+        "text relevance 7.6",
+        "same functional area: activation, amend-renew-terminate"
+      ],
+      "symbols": [],
+      "repo": "example-org/clm-api-sample"
+    },
+    {
+      "file": "src/Clm.Api/Data/AgreementRepository.cs",
+      "score": 8.95,
+      "reasons": [
+        "text relevance 6.9",
+        "same functional area: agreement-lifecycle"
+      ],
+      "symbols": [
+        "Agreement",
+        "AgreementRequest",
+        "IAgreementRepository",
+        "RenewRequest"
+      ],
+      "repo": "example-org/clm-api-sample"
+    },
+    {
+      "file": "src/app/agreements/agreement.service.ts",
+      "score": 4.77,
+      "reasons": [
+        "text relevance 3.7",
+        "same functional area: activation, agreement-lifecycle, amend-renew-terminate"
+      ],
+      "symbols": [
+        "AgreementService"
+      ],
+      "repo": "example-org/clm-ui-sample"
+    },
+    {
+      "file": "src/Clm.Api/Services/AgreementService.cs",
+      "score": 3.29,
+      "reasons": [
+        "text relevance 2.5",
+        "same functional area: activation, agreement-lifecycle"
+      ],
+      "symbols": [
+        "AgreementService",
+        "IAgreementService"
+      ],
+      "repo": "example-org/clm-api-sample"
+    },
+    {
+      "file": "src/Clm.Api/Startup.cs",
+      "score": 1.96,
+      "reasons": [
+        "text relevance 2.0"
+      ],
+      "symbols": [
+        "Startup"
+      ],
+      "repo": "example-org/clm-api-sample"
+    }
+  ],
+  "impact": {
+    "functional_areas": [
+      "agreement-lifecycle",
+      "amend-renew-terminate",
+      "activation",
+      "validation-rules",
+      "integrations"
+    ],
+    "files": [
+      "example-org/clm-api-sample: src/Clm.Api/Services/RenewalService.cs",
+      "example-org/clm-api-sample: src/Clm.Api/Controllers/AgreementsController.cs",
+      "example-org/clm-api-sample: src/Clm.Api/appsettings.json",
+      "example-org/clm-api-sample: src/Clm.Api/Data/AgreementRepository.cs",
+      "example-org/clm-ui-sample: src/app/agreements/agreement.service.ts"
+    ],
+    "classes": [
+      "IRenewalService",
+      "RenewalService",
+      "AgreementsController",
+      "IAgreementRepository",
+      "Agreement",
+      "RenewRequest",
+      "AgreementRequest",
+      "AgreementService"
+    ],
+    "methods": [],
+    "apis": [
+      "GET /api/clm/v1/agreements/{id} (AgreementsController.GetAgreement)",
+      "POST /api/clm/v1/agreements (AgreementsController.CreateAgreement)",
+      "POST /api/clm/v1/agreements/{id}/renew (AgreementsController.RenewAgreement)",
+      "POST /api/clm/v1/agreements/{id}/activate (AgreementsController.ActivateAgreement)"
+    ],
+    "config": [
+      "Renewal:DefaultTermMonths",
+      "Renewal",
+      "Renewal:DefaultTermMonths",
+      "FeatureFlags",
+      "FeatureFlags:clm.activation.publishToIndex"
+    ],
+    "feature_flags": [
+      "FeatureFlags:clm.activation.publishToIndex"
+    ],
+    "workflows": [],
+    "dependencies": [],
+    "dependents": [
+      "IRenewalService <- src/Clm.Api/Controllers/AgreementsController.cs",
+      "IRenewalService <- src/Clm.Api/Startup.cs",
+      "RenewalService <- src/Clm.Api/Startup.cs",
+      "IAgreementRepository <- src/Clm.Api/Services/AgreementService.cs",
+      "IAgreementRepository <- src/Clm.Api/Services/RenewalService.cs",
+      "Agreement <- src/Clm.Api/Services/AgreementService.cs",
+      "Agreement <- src/Clm.Api/Services/RenewalService.cs",
+      "RenewRequest <- src/Clm.Api/Controllers/AgreementsController.cs",
+      "RenewRequest <- src/Clm.Api/Services/RenewalService.cs",
+      "AgreementRequest <- src/Clm.Api/Controllers/AgreementsController.cs",
+      "AgreementRequest <- src/Clm.Api/Services/AgreementService.cs"
+    ],
+    "data_migrations": [],
+    "customer_impact": [
+      "Customer Account: Synthetic Customer Inc.",
+      "Environment Type: Production",
+      "Severity: Sev 2",
+      "Priority: Critical",
+      "Components: Agreement Lifecycle",
+      "Affected versions: 2026.09"
+    ],
+    "similar_defects": [
+      {
+        "key": "SYNTH-50",
+        "summary": "Renewal fails for agreements with custom term picklist",
+        "score": 9.54,
+        "status": "Closed",
+        "url": "https://example.atlassian.net/browse/SYNTH-50",
+        "components": [
+          "Agreement Lifecycle"
+        ],
+        "customer": null
+      },
+      {
+        "key": "SYNTH-61",
+        "summary": "Activated agreement not published to search index",
+        "score": 3.28,
+        "status": "Closed",
+        "url": "https://example.atlassian.net/browse/SYNTH-61",
+        "components": [
+          "Search"
+        ],
+        "customer": null
+      }
+    ],
+    "docs": [
+      {
+        "title": "Contract Terms",
+        "url": "https://documentation.conga.com/en/clm-for-advantage-platform/current/clm-for-users/contract-details-and-actions/contract-terms",
+        "area": "amend-renew-terminate",
+        "score": 59.1
+      },
+      {
+        "title": "Post-Contract Activation Actions",
+        "url": "https://documentation.conga.com/en/clm-for-advantage-platform/current/clm-for-users/post-contract-activation-actions",
+        "area": "agreement-lifecycle",
+        "score": 54.36
+      },
+      {
+        "title": "Contract Renewal",
+        "url": "https://documentation.conga.com/en/clm-for-advantage-platform/current/clm-for-users/post-contract-activation-actions/contract-renewal",
+        "area": "agreement-lifecycle",
+        "score": 52.32
+      }
+    ],
+    "risk_score": 66,
+    "risk_factors": [
+      "highest functional-area criticality 3/3",
+      "4 API endpoint(s) affected",
+      "11 dependent component(s)",
+      "configuration / feature-flag change",
+      "2 similar historical customer defect(s)"
+    ]
+  },
+  "regression_scope": [
+    {
+      "id": "com.example.clm.api.AgreementRenewalTests#renewUsesDefaultTerm",
+      "score": 17.0,
+      "reasons": [
+        "area: Amend, Renew, Terminate & Expire, Agreement / Contract Lifecycle, Integrations (CRM, Salesforce, Composer, X-Author, APIs)",
+        "calls impacted API /api/clm/v1/agreements/",
+        "keyword relevance 1.00"
+      ]
+    },
+    {
+      "id": "com.example.clm.api.AgreementRenewalTests#renewActivatedAgreementWithTerm",
+      "score": 16.47,
+      "reasons": [
+        "area: Agreement / Contract Lifecycle, Amend, Renew, Terminate & Expire, Activation & Fully Signed",
+        "calls impacted API /api/clm/v1/agreements/",
+        "keyword relevance 0.82"
+      ]
+    },
+    {
+      "id": "com.example.clm.api.AgreementActivationTests#activateFullySignedAgreement",
+      "score": 12.5,
+      "reasons": [
+        "area: Agreement / Contract Lifecycle, Activation & Fully Signed",
+        "calls impacted API /api/clm/v1/agreements/",
+        "smoke/critical tag"
+      ]
+    },
+    {
+      "id": "features/amendment.feature:6",
+      "score": 10.5,
+      "reasons": [
+        "area: Agreement / Contract Lifecycle, Amend, Renew, Terminate & Expire, Activation & Fully Signed",
+        "smoke/critical tag"
+      ]
+    },
+    {
+      "id": "features/amendment.feature:10",
+      "score": 8.17,
+      "reasons": [
+        "area: Amend, Renew, Terminate & Expire, Agreement / Contract Lifecycle",
+        "keyword relevance 0.39"
+      ]
+    }
+  ],
+  "test_gaps": [
+    {
+      "area": "Validation Rules & Callbacks",
+      "reason": "No automation tests mapped to this impacted functional area.",
+      "severity": "high"
+    }
+  ],
+  "suggested_owners": [
+    [
+      "dev-bob",
+      14
+    ],
+    [
+      "dev-alice",
+      5
+    ],
+    [
+      "dev-carol",
+      4
+    ]
+  ],
+  "next_steps": [
+    "Reproduce with the steps above in a non-production org matching the customer's version/config.",
+    "Inspect src/Clm.Api/Services/RenewalService.cs first.",
+    "Add an automated regression test for this scenario once fixed (see test gaps)."
+  ],
+  "ai_used": false,
+  "intelligence_layer": {
+    "code": "example-org/clm-api-sample (6 files), example-org/clm-ui-sample (1 files)",
+    "tests": "example-org/clm-automation-sample (6 tests, testng)",
+    "knowledge": "1206 CLM documentation pages",
+    "defects": "3 historical defects"
+  }
+}

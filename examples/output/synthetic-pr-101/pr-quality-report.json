@@ -1,0 +1,339 @@
+{
+  "version": "0.1.0",
+  "generated_at": "2026-10-26 08:53 UTC",
+  "dry_run": true,
+  "pr": {
+    "repo": "example-org/clm-api-sample",
+    "number": 101,
+    "title": "Add pre-validation for agreement renewal",
+    "url": "https://github.com/example-org/clm-api-sample/pull/101",
+    "head_sha": "3f2a9c1e5b7d4a6f8e0c2b4d6f8a0c2e4b6d8f0a",
+    "author": "dev-alice",
+    "files": 4,
+    "additions": 45,
+    "deletions": 2
+  },
+  "decision": "BLOCK",
+  "reasons": [
+    "1 regression test failure(s) classified as product regression or unexplained (e.g. com.example.clm.api.AgreementRenewalTests.renewUsesDefaultTerm).",
+    "1 high-severity test gap(s): Validation Rules & Callbacks.",
+    "High change risk score 69/100 (highest functional-area criticality 3/3, no unit/integration test changes in the PR, 4 API endpoint(s) affected)."
+  ],
+  "evidence": [
+    "Executed 3 regression test(s): 2 passed, 1 failed, 0 skipped.",
+    "Linked Jira: SYNTH-101.",
+    "Risk score 69/100."
+  ],
+  "change_summary": "4 files changed (+45/-2; 3 code, 1 config). Introduces 2 new type(s): IRenewalValidator, RenewalValidator. Primary functional areas: Amend, Renew, Terminate & Expire, Agreement / Contract Lifecycle, Validation Rules & Callbacks, Administration, Settings & Feature Flags. 4 API endpoint(s) affected.",
+  "requirements": [
+    {
+      "key": "SYNTH-101",
+      "found": true,
+      "summary": "Prevent renewal of terminated or expired agreements",
+      "issue_type": "Story",
+      "status": "In Progress",
+      "url": "https://example.atlassian.net/browse/SYNTH-101",
+      "alignment": "aligned",
+      "notes": "13 requirement terms found in the change (heuristic).",
+      "matched_terms": [
+        "agreement",
+        "expir",
+        "feature",
+        "flag",
+        "must",
+        "positive",
+        "renew",
+        "renewal",
+        "sample",
+        "synthetic",
+        "term",
+        "terminat"
+      ],
+      "error": null
+    }
+  ],
+  "impact": {
+    "functional_areas": [
+      "amend-renew-terminate",
+      "agreement-lifecycle",
+      "validation-rules",
+      "admin-configuration",
+      "activation",
+      "integrations"
+    ],
+    "files": [
+      "src/Clm.Api/Validation/RenewalValidator.cs",
+      "src/Clm.Api/Services/RenewalService.cs",
+      "src/Clm.Api/Startup.cs",
+      "src/Clm.Api/appsettings.json"
+    ],
+    "classes": [
+      "IRenewalValidator",
+      "RenewalValidator",
+      "RenewalService",
+      "Startup",
+      "IRenewalService"
+    ],
+    "methods": [
+      "IRenewalValidator.Validate",
+      "RenewalValidator.Validate",
+      "RenewalService.RenewAsync",
+      "Startup.ConfigureServices"
+    ],
+    "apis": [
+      "GET /api/clm/v1/agreements/{id} (AgreementsController.GetAgreement) [indirect]",
+      "POST /api/clm/v1/agreements (AgreementsController.CreateAgreement) [indirect]",
+      "POST /api/clm/v1/agreements/{id}/renew (AgreementsController.RenewAgreement) [indirect]",
+      "POST /api/clm/v1/agreements/{id}/activate (AgreementsController.ActivateAgreement) [indirect]"
+    ],
+    "config": [
+      "src/Clm.Api/appsettings.json (modified, +2/-1)"
+    ],
+    "feature_flags": [
+      "clm.renewal.preValidation (RenewalValidator.cs)"
+    ],
+    "workflows": [],
+    "dependencies": [
+      "DI registration (Scoped): IRenewalValidator -> RenewalValidator"
+    ],
+    "dependents": [
+      "IRenewalService <- src/Clm.Api/Controllers/AgreementsController.cs",
+      "IRenewalService implemented by RenewalService (src/Clm.Api/Services/RenewalService.cs)",
+      "UI example-org/clm-ui-sample: src/app/agreements/agreement.service.ts calls /api/clm/v1/agreements/${id}/activate",
+      "UI example-org/clm-ui-sample: src/app/agreements/agreement.service.ts calls /api/clm/v1/agreements/${id}/renew"
+    ],
+    "data_migrations": [],
+    "customer_impact": [
+      "Requirement SYNTH-101 (Story, priority High) - Customer Account: Synthetic Customer Inc.",
+      "Historical defect SYNTH-50 in a related area: Renewal fails for agreements with custom term picklist",
+      "Historical defect SYNTH-61 in a related area: Activated agreement not published to search index",
+      "Customer-critical capability touched: Amend, Renew, Terminate & Expire",
+      "Customer-critical capability touched: Agreement / Contract Lifecycle",
+      "Customer-critical capability touched: Validation Rules & Callbacks",
+      "Customer-critical capability touched: Activation & Fully Signed"
+    ],
+    "similar_defects": [
+      {
+        "key": "SYNTH-50",
+        "summary": "Renewal fails for agreements with custom term picklist",
+        "score": 6.74,
+        "status": "Closed",
+        "url": "https://example.atlassian.net/browse/SYNTH-50",
+        "components": [
+          "Agreement Lifecycle"
+        ],
+        "customer": null
+      },
+      {
+        "key": "SYNTH-61",
+        "summary": "Activated agreement not published to search index",
+        "score": 2.5,
+        "status": "Closed",
+        "url": "https://example.atlassian.net/browse/SYNTH-61",
+        "components": [
+          "Search"
+        ],
+        "customer": null
+      }
+    ],
+    "docs": [
+      {
+        "title": "Post-Contract Activation Actions",
+        "url": "https://documentation.conga.com/en/clm-for-advantage-platform/current/clm-for-users/post-contract-activation-actions",
+        "area": "agreement-lifecycle",
+        "score": 34.08
+      },
+      {
+        "title": "Configuring Duplicate Checks for Contract Requests",
+        "url": "https://documentation.conga.com/en/clm-for-advantage-platform/current/clm-for-administrators/setup-and-configuration/contract-request-settings/configuring-duplicate-checks-for-contract-requests",
+        "area": "agreement-lifecycle",
+        "score": 33.51
+      },
+      {
+        "title": "Contract Status Categories and Statuses",
+        "url": "https://documentation.conga.com/en/clm-for-advantage-platform/current/clm-for-users/contract-management/contract-management/contract-creation/contract-status-categories-and-statuses",
+        "area": "agreement-lifecycle",
+        "score": 30.01
+      },
+      {
+        "title": "Supplier Management",
+        "url": "https://documentation.conga.com/en/clm-for-advantage-platform/current/clm-for-users/supplier-relationship-management/supplier-management",
+        "area": "agreement-lifecycle",
+        "score": 29.47
+      }
+    ],
+    "risk_score": 69,
+    "risk_factors": [
+      "highest functional-area criticality 3/3",
+      "no unit/integration test changes in the PR",
+      "4 API endpoint(s) affected",
+      "4 dependent component(s)",
+      "configuration / feature-flag change",
+      "2 similar historical customer defect(s)"
+    ]
+  },
+  "changed_members": [
+    {
+      "kind": "interface",
+      "name": "IRenewalValidator",
+      "file": "src/Clm.Api/Validation/RenewalValidator.cs",
+      "container": null
+    },
+    {
+      "kind": "method",
+      "name": "Validate",
+      "file": "src/Clm.Api/Validation/RenewalValidator.cs",
+      "container": "IRenewalValidator"
+    },
+    {
+      "kind": "class",
+      "name": "RenewalValidator",
+      "file": "src/Clm.Api/Validation/RenewalValidator.cs",
+      "container": null
+    },
+    {
+      "kind": "method",
+      "name": "Validate",
+      "file": "src/Clm.Api/Validation/RenewalValidator.cs",
+      "container": "RenewalValidator"
+    },
+    {
+      "kind": "method",
+      "name": "RenewAsync",
+      "file": "src/Clm.Api/Services/RenewalService.cs",
+      "container": "RenewalService"
+    },
+    {
+      "kind": "method",
+      "name": "ConfigureServices",
+      "file": "src/Clm.Api/Startup.cs",
+      "container": "Startup"
+    }
+  ],
+  "selected_tests": [
+    {
+      "id": "com.example.clm.api.AgreementRenewalTests#renewActivatedAgreementWithTerm",
+      "score": 15.88,
+      "reasons": [
+        "area: Agreement / Contract Lifecycle, Amend, Renew, Terminate & Expire, Activation & Fully Signed",
+        "calls impacted API /api/clm/v1/agreements/",
+        "keyword relevance 0.63"
+      ],
+      "areas": [
+        "agreement-lifecycle",
+        "amend-renew-terminate",
+        "activation"
+      ]
+    },
+    {
+      "id": "com.example.clm.api.AgreementRenewalTests#renewUsesDefaultTerm",
+      "score": 15.87,
+      "reasons": [
+        "area: Amend, Renew, Terminate & Expire, Agreement / Contract Lifecycle, Integrations (CRM, Salesforce, Composer, X-Author, APIs)",
+        "calls impacted API /api/clm/v1/agreements/",
+        "keyword relevance 0.62"
+      ],
+      "areas": [
+        "amend-renew-terminate",
+        "agreement-lifecycle",
+        "integrations"
+      ]
+    },
+    {
+      "id": "features/amendment.feature:10",
+      "score": 12.0,
+      "reasons": [
+        "area: Amend, Renew, Terminate & Expire, Agreement / Contract Lifecycle, Administration, Settings & Feature Flags",
+        "keyword relevance 1.00"
+      ],
+      "areas": [
+        "amend-renew-terminate",
+        "agreement-lifecycle",
+        "admin-configuration"
+      ]
+    },
+    {
+      "id": "features/amendment.feature:6",
+      "score": 11.68,
+      "reasons": [
+        "area: Agreement / Contract Lifecycle, Amend, Renew, Terminate & Expire, Activation & Fully Signed",
+        "keyword relevance 0.39",
+        "smoke/critical tag"
+      ],
+      "areas": [
+        "agreement-lifecycle",
+        "amend-renew-terminate",
+        "activation"
+      ]
+    },
+    {
+      "id": "com.example.clm.api.AgreementActivationTests#activateFullySignedAgreement",
+      "score": 11.5,
+      "reasons": [
+        "area: Agreement / Contract Lifecycle, Activation & Fully Signed",
+        "calls impacted API /api/clm/v1/agreements/",
+        "smoke/critical tag"
+      ],
+      "areas": [
+        "agreement-lifecycle",
+        "activation",
+        "esignature"
+      ]
+    }
+  ],
+  "test_gaps": [
+    {
+      "area": "Validation Rules & Callbacks",
+      "reason": "No automation tests mapped to this impacted functional area.",
+      "severity": "high"
+    },
+    {
+      "area": "unit tests",
+      "reason": "1 new/changed type(s) without unit or integration tests in this PR (e.g. RenewalValidator).",
+      "severity": "medium"
+    }
+  ],
+  "execution": {
+    "executor": "junit",
+    "executed": true,
+    "run_url": null,
+    "results": [
+      {
+        "id": "com.example.clm.api.AgreementRenewalTests.renewActivatedAgreementWithTerm",
+        "name": "renewActivatedAgreementWithTerm",
+        "status": "passed",
+        "duration_s": 2.1,
+        "message": null,
+        "details": null,
+        "classification": null
+      },
+      {
+        "id": "com.example.clm.api.AgreementRenewalTests.renewUsesDefaultTerm",
+        "name": "renewUsesDefaultTerm",
+        "status": "failed",
+        "duration_s": 1.7,
+        "message": "expected status 200 but was 400: Renewal validation failed: term is required",
+        "details": "java.lang.AssertionError: expected status 200 but was 400\n  at com.example.clm.api.BaseApiTest.assertStatus(BaseApiTest.java:41)",
+        "classification": "product-regression"
+      },
+      {
+        "id": "com.example.clm.api.AgreementActivationTests.activateFullySignedAgreement",
+        "name": "activateFullySignedAgreement",
+        "status": "passed",
+        "duration_s": 3.4,
+        "message": null,
+        "details": null,
+        "classification": null
+      }
+    ],
+    "note": null
+  },
+  "intelligence_layer": {
+    "code": "example-org/clm-api-sample (6 files), example-org/clm-ui-sample (1 files)",
+    "tests": "example-org/clm-automation-sample (6 tests, testng)",
+    "knowledge": "1206 CLM documentation pages",
+    "defects": "3 historical defects"
+  },
+  "ai_used": false,
+  "ai_notes": []
+}
