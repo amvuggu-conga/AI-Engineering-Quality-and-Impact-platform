@@ -1,0 +1,10 @@
+{
+  "number": 101,
+  "title": "Add pre-validation for agreement renewal",
+  "body": "SYNTHETIC SAMPLE PR used to demonstrate the platform offline.\n\nAdds a renewal pre-validation step: terminated or expired agreements can no longer be renewed, and the renewal term must be positive. Guarded by feature flag clm.renewal.preValidation.\n\nFixes # https://example.atlassian.net/browse/SYNTH-101",
+  "html_url": "https://github.com/example-org/clm-api-sample/pull/101",
+  "user": {"login": "dev-alice"},
+  "head": {"sha": "3f2a9c1e5b7d4a6f8e0c2b4d6f8a0c2e4b6d8f0a", "ref": "feature/SYNTH-101-renewal-validation"},
+  "base": {"ref": "master"},
+  "labels": [{"name": "renewal"}]
+}

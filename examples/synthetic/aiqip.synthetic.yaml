@@ -1,0 +1,17 @@
+# Configuration for the SYNTHETIC offline demo (examples/synthetic/run_demo.sh).
+jira_base_url: https://example.atlassian.net
+index_dir: examples/synthetic/.index
+dev_repos:
+  - name: example-org/clm-api-sample
+    kind: api
+    local_path: examples/synthetic/api-repo
+  - name: example-org/clm-ui-sample
+    kind: ui
+    local_path: examples/synthetic/ui-repo
+automation_repo:
+  name: example-org/clm-automation-sample
+  local_path: examples/synthetic/automation-repo
+execution:
+  executor: junit
+  working_dir: examples/synthetic/automation-repo/results
+  junit_glob: "TEST-*.xml"

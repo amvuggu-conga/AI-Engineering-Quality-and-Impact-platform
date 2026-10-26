@@ -1,0 +1,75 @@
+# Drop-in workflow for a dev repository (e.g. congaengr/ROC-CLM-API -> .github/workflows/aiqip-pr-quality.yml).
+# Runs the AI Quality Gate on every PR update, posts the PR comment and an "AI Quality Gate" commit status.
+#
+# Required repository/org secrets:   AIQ_GITHUB_TOKEN (read: ROC-CLM-API, ROC-CLM-UI, rlpclm-automation, this
+#                                    platform repo; write: PR comments + statuses on this repo; actions:write on
+#                                    the automation repo if execution is enabled), JIRA_EMAIL, JIRA_API_TOKEN,
+#                                    AIQ_LLM_API_KEY (optional)
+# Optional repository variables:     AIQ_POST (default "false" = dry run, report only in the job summary),
+#                                    AIQ_LLM_PROVIDER / AIQ_LLM_MODEL / AIQ_LLM_BASE_URL, AIQ_TEST_EXECUTOR
+name: AI Quality Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+concurrency:
+  group: aiqip-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  ai-quality-gate:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      AIQ_GITHUB_TOKEN: ${{ secrets.AIQ_GITHUB_TOKEN }}
+      JIRA_BASE_URL: https://conga.atlassian.net
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      AIQ_LLM_PROVIDER: ${{ vars.AIQ_LLM_PROVIDER || 'none' }}
+      AIQ_LLM_MODEL: ${{ vars.AIQ_LLM_MODEL }}
+      AIQ_LLM_BASE_URL: ${{ vars.AIQ_LLM_BASE_URL }}
+      AIQ_LLM_API_KEY: ${{ secrets.AIQ_LLM_API_KEY }}
+      AIQ_TEST_EXECUTOR: ${{ vars.AIQ_TEST_EXECUTOR || 'none' }}
+      AIQ_POST: ${{ vars.AIQ_POST || 'false' }}
+    steps:
+      - name: Checkout PR head (for the code index)
+        uses: actions/checkout@v4
+        with:
+          path: dev
+          fetch-depth: 0
+      - name: Checkout platform
+        uses: actions/checkout@v4
+        with:
+          repository: amvuggu-conga/AI-Engineering-Quality-and-Impact-platform
+          token: ${{ secrets.AIQ_GITHUB_TOKEN }}
+          path: platform
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e platform
+      - name: Build intelligence layer
+        working-directory: platform
+        run: |
+          aiqip index code --repo "${{ github.repository }}" --path "$GITHUB_WORKSPACE/dev"
+          aiqip index code --repo congaengr/ROC-CLM-UI --kind ui || echo "::warning::UI repo not indexed"
+          aiqip index tests || echo "::warning::automation repo not indexed"
+          aiqip index defects || echo "::warning::defects not indexed"
+      - name: AI Quality Gate
+        working-directory: platform
+        run: |
+          aiqip pr-quality --repo "${{ github.repository }}" --pr "${{ github.event.pull_request.number }}" --out report \
+            --details-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - if: always()
+        run: test -f platform/report/pr-quality-report.md && cat platform/report/pr-quality-report.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-quality-report
+          path: platform/report/

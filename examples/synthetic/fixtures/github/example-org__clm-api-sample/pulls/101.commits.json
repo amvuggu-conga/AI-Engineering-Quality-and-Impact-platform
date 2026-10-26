@@ -1,0 +1,4 @@
+[
+  {"commit": {"message": "SYNTH-101 add RenewalValidator and wire into RenewalService"}},
+  {"commit": {"message": "SYNTH-101 feature flag clm.renewal.preValidation"}}
+]

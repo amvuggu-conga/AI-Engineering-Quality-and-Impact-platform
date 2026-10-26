@@ -1,0 +1,30 @@
+[
+  {
+    "filename": "src/Clm.Api/Validation/RenewalValidator.cs",
+    "status": "added",
+    "additions": 34,
+    "deletions": 0,
+    "patch": "@@ -0,0 +1,34 @@\n+using Clm.Api.Services;\n+\n+namespace Clm.Api.Validation\n+{\n+    public interface IRenewalValidator\n+    {\n+        ValidationResult Validate(Agreement agreement, RenewRequest request);\n+    }\n+\n+    public class RenewalValidator : IRenewalValidator\n+    {\n+        private readonly IFeatureFlagService _features;\n+\n+        public RenewalValidator(IFeatureFlagService features)\n+        {\n+            _features = features;\n+        }\n+\n+        public ValidationResult Validate(Agreement agreement, RenewRequest request)\n+        {\n+            if (!_features.IsFeatureEnabled(\"clm.renewal.preValidation\"))\n+            {\n+                return ValidationResult.Success;\n+            }\n+            if (agreement.Status == \"Terminated\" || agreement.Status == \"Expired\")\n+            {\n+                return ValidationResult.Fail(\"Renewal is not allowed for terminated or expired agreements\");\n+            }\n+            if (request.TermMonths.HasValue && request.TermMonths <= 0)\n+            {\n+                return ValidationResult.Fail(\"Renewal term must be positive\");\n+            }\n+            return ValidationResult.Success;\n+        }\n+    }\n+}"
+  },
+  {
+    "filename": "src/Clm.Api/Services/RenewalService.cs",
+    "status": "modified",
+    "additions": 8,
+    "deletions": 1,
+    "patch": "@@ -10,15 +10,17 @@ namespace Clm.Api.Services\n     public class RenewalService : IRenewalService\n     {\n         private readonly IAgreementRepository _repository;\n         private readonly IConfiguration _configuration;\n+        private readonly IRenewalValidator _validator;\n \n-        public RenewalService(IAgreementRepository repository, IConfiguration configuration)\n+        public RenewalService(IAgreementRepository repository, IConfiguration configuration, IRenewalValidator validator)\n         {\n             _repository = repository;\n             _configuration = configuration;\n+            _validator = validator;\n         }\n@@ -26,6 +28,11 @@ public async Task<Agreement> RenewAsync(string id, RenewRequest request)\n         {\n             var agreement = await _repository.GetAsync(id);\n+            var validation = _validator.Validate(agreement, request);\n+            if (!validation.IsValid)\n+            {\n+                throw new ValidationException(validation.Message);\n+            }\n             var termMonths = request.TermMonths ?? _configuration.GetValue<int>(\"Renewal:DefaultTermMonths\");"
+  },
+  {
+    "filename": "src/Clm.Api/Startup.cs",
+    "status": "modified",
+    "additions": 1,
+    "deletions": 0,
+    "patch": "@@ -9,6 +9,7 @@ public void ConfigureServices(IServiceCollection services)\n         {\n             services.AddScoped<IAgreementService, AgreementService>();\n             services.AddScoped<IRenewalService, RenewalService>();\n+            services.AddScoped<IRenewalValidator, RenewalValidator>();\n         }"
+  },
+  {
+    "filename": "src/Clm.Api/appsettings.json",
+    "status": "modified",
+    "additions": 2,
+    "deletions": 1,
+    "patch": "@@ -3,6 +3,7 @@\n     \"DefaultTermMonths\": 12\n   },\n   \"FeatureFlags\": {\n-    \"clm.activation.publishToIndex\": true\n+    \"clm.activation.publishToIndex\": true,\n+    \"clm.renewal.preValidation\": false\n   }\n }"
+  }
+]

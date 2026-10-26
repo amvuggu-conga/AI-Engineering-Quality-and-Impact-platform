@@ -1,0 +1,34 @@
+{
+  "id": "900202",
+  "key": "SYNTH-202",
+  "names": {"customfield_10050": "Customer Account", "customfield_10060": "Environment Type", "customfield_10070": "Severity"},
+  "fields": {
+    "summary": "Renewed agreement keeps old end date when no term is provided",
+    "issuetype": {"name": "Bug"},
+    "status": {"name": "Open"},
+    "priority": {"name": "Critical"},
+    "components": [{"name": "Agreement Lifecycle"}],
+    "labels": ["customer_escalation", "renewal"],
+    "versions": [{"name": "2026.09"}],
+    "reporter": {"displayName": "Support Engineer"},
+    "description": {
+      "type": "doc", "version": 1,
+      "content": [
+        {"type": "paragraph", "content": [{"type": "text", "text": "SYNTHETIC SAMPLE BUG. Customer renews an activated agreement from the agreement record without entering a term. The renewal succeeds but the agreement end date does not change, so the agreement expires on the original date."}]},
+        {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "Steps to reproduce"}]},
+        {"type": "orderedList", "content": [
+          {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Open an activated agreement"}]}]},
+          {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Click Renew and leave Term (months) empty"}]}]},
+          {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Check the End Date on the renewed agreement"}]}]}
+        ]},
+        {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "Expected result"}]},
+        {"type": "paragraph", "content": [{"type": "text", "text": "End date is extended by the default renewal term (Renewal:DefaultTermMonths)."}]},
+        {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "Actual result"}]},
+        {"type": "paragraph", "content": [{"type": "text", "text": "End date unchanged; RenewAsync logs no error. POST /api/clm/v1/agreements/{id}/renew returns 200."}]}
+      ]
+    },
+    "customfield_10050": "Synthetic Customer Inc.",
+    "customfield_10060": {"value": "Production"},
+    "customfield_10070": {"value": "Sev 2"}
+  }
+}
