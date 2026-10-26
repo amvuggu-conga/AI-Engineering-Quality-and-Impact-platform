@@ -1,0 +1,26 @@
+{
+  "id": "900101",
+  "key": "SYNTH-101",
+  "names": {"customfield_10050": "Customer Account"},
+  "fields": {
+    "summary": "Prevent renewal of terminated or expired agreements",
+    "issuetype": {"name": "Story"},
+    "status": {"name": "In Progress"},
+    "priority": {"name": "High"},
+    "components": [{"name": "Agreement Lifecycle"}],
+    "labels": ["renewal", "validation"],
+    "description": {
+      "type": "doc", "version": 1,
+      "content": [
+        {"type": "paragraph", "content": [{"type": "text", "text": "SYNTHETIC SAMPLE ISSUE. As a contract manager I must not be able to renew an agreement that is terminated or expired."}]},
+        {"type": "heading", "attrs": {"level": 3}, "content": [{"type": "text", "text": "Acceptance criteria"}]},
+        {"type": "bulletList", "content": [
+          {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Renew action returns a validation error for terminated or expired agreements"}]}]},
+          {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Renewal term must be positive"}]}]},
+          {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Behaviour is behind a feature flag for staged rollout"}]}]}
+        ]}
+      ]
+    },
+    "customfield_10050": "Synthetic Customer Inc."
+  }
+}

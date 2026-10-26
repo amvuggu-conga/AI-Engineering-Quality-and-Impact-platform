@@ -1,0 +1,51 @@
+# AI Engineering Quality & Impact Platform - non-secret configuration for Conga CLM.
+# Secrets (tokens, API keys) are NEVER read from this file; they come from environment variables.
+jira_base_url: https://conga.atlassian.net
+index_dir: .aiqip/index
+
+dev_repos:
+  - name: congaengr/ROC-CLM-API
+    branch: master
+    kind: api
+  - name: congaengr/ROC-CLM-UI
+    branch: master
+    kind: ui
+
+automation_repo:
+  name: congaengr/rlpclm-automation
+  branch: master
+
+defects:
+  # Escape defects / customer bugs dashboard; its filter-backed gadgets are resolved to JQL.
+  dashboard_id: "36628"
+  # Extra JQL appended to the dashboard filters, e.g.:
+  # extra_jql: ["project = CONTRACTS AND issuetype = Bug AND labels in (escape_defect, customer_bug) AND created >= -730d"]
+  extra_jql: []
+  max_results: 1000
+
+docs:
+  sitemaps:
+    - https://documentation.conga.com/en/clm-for-advantage-platform/sitemap.xml
+  fetch_content: true
+  max_pages: 2000
+
+execution:
+  # none | github-workflow | command | junit   (override with AIQ_TEST_EXECUTOR)
+  executor: none
+  framework: auto
+  workflow_repo: congaengr/rlpclm-automation
+  workflow_file: aiqip-regression.yml
+  workflow_ref: master
+  results_artifact: junit-results
+  timeout_minutes: 90
+  max_tests: 200
+
+gate:
+  require_jira_link: true
+  block_on_regression_failure: true
+  review_on_untested_high_risk: true
+  review_if_not_executed: true
+  high_risk_score: 60
+  report_mode: status      # status (commit status) | check (Checks API; needs a GitHub App / Actions token)
+  status_context: AI Quality Gate
+  review_state: pending    # commit status state used for REVIEW

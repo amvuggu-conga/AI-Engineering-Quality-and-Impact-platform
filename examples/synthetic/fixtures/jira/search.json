@@ -1,0 +1,7 @@
+{
+  "issues": [
+    {"key": "SYNTH-50", "fields": {"summary": "Renewal fails for agreements with custom term picklist", "status": {"name": "Closed"}, "priority": {"name": "High"}, "components": [{"name": "Agreement Lifecycle"}], "labels": ["escape_defect", "renewal"], "description": "SYNTHETIC. Renew action throws when term months comes from a custom picklist value."}},
+    {"key": "SYNTH-61", "fields": {"summary": "Activated agreement not published to search index", "status": {"name": "Closed"}, "priority": {"name": "Medium"}, "components": [{"name": "Search"}], "labels": ["escape_defect"], "description": "SYNTHETIC. After activation the agreement does not appear in search because the publish flag was off."}},
+    {"key": "SYNTH-77", "fields": {"summary": "Clause library alternate clause loses formatting", "status": {"name": "Closed"}, "priority": {"name": "Low"}, "components": [{"name": "Clauses"}], "labels": ["customer_bug"], "description": "SYNTHETIC. Alternate clause text formatting is dropped when inserted into a template."}}
+  ]
+}

@@ -1,0 +1,46 @@
+# Contract for the `github-workflow` test executor. Add to congaengr/rlpclm-automation as
+# .github/workflows/aiqip-regression.yml and adapt the "Run selected tests" step to the repo's framework.
+#
+# The platform dispatches this workflow with:
+#   tests          framework-native filter of the selected tests (see analysis/test_selection.build_filter)
+#   framework      testng | junit | nunit | mstest | xunit | playwright | jest | cypress | pytest | gherkin
+#   correlation_id unique id; MUST appear in run-name so the platform can find the run
+# and expects an artifact named `junit-results` containing JUnit XML files.
+name: AIQIP Regression
+run-name: "AIQIP regression ${{ inputs.correlation_id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tests: {description: "Selected tests filter", required: true}
+      framework: {description: "Test framework", required: false, default: "auto"}
+      correlation_id: {description: "Correlation id", required: true}
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      # ---- choose ONE block matching rlpclm-automation's stack -------------------------------------
+      # Java / TestNG or JUnit (Maven Surefire writes target/surefire-reports/TEST-*.xml)
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: "17"}
+      - name: Run selected tests
+        env:
+          TESTS: ${{ inputs.tests }}
+        run: mvn -B test -Dtest="$TESTS" -DfailIfNoTests=false || true
+      # .NET (NUnit/MSTest/xUnit):
+      #   run: dotnet test --filter "$TESTS" --logger "junit;LogFilePath=results/TEST-{assembly}.xml" || true
+      # Playwright:
+      #   run: npx playwright test --grep "$TESTS" --reporter=junit > results/TEST-playwright.xml || true
+      # pytest:
+      #   run: pytest $TESTS --junitxml=results/TEST-pytest.xml || true
+      # ------------------------------------------------------------------------------------------------
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results
+          path: |
+            **/surefire-reports/TEST-*.xml
+            **/results/TEST-*.xml

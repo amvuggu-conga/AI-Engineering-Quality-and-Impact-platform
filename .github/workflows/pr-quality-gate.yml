@@ -1,0 +1,89 @@
+# Use case 1 - Autonomous PR Quality Intelligence.
+# Run manually from this repo (workflow_dispatch) or call it from another workflow (workflow_call).
+# Dry run by default: the PR comment / status are only written when `post: true`.
+name: PR Quality Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Dev repository (owner/name)"
+        default: "congaengr/ROC-CLM-API"
+        required: true
+      pr_number:
+        description: "Pull request number"
+        default: "2248"
+        required: true
+      post:
+        description: "Post PR comment + commit status (otherwise dry run)"
+        type: boolean
+        default: false
+      execute:
+        description: "Trigger regression execution via the configured executor"
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      repo: {type: string, required: true}
+      pr_number: {type: string, required: true}
+      post: {type: boolean, default: false}
+      execute: {type: boolean, default: false}
+    secrets:
+      AIQ_GITHUB_TOKEN: {required: true}
+      JIRA_EMAIL: {required: false}
+      JIRA_API_TOKEN: {required: false}
+      AIQ_LLM_API_KEY: {required: false}
+
+permissions:
+  contents: read
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      AIQ_GITHUB_TOKEN: ${{ secrets.AIQ_GITHUB_TOKEN }}
+      JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL || 'https://conga.atlassian.net' }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      AIQ_LLM_PROVIDER: ${{ vars.AIQ_LLM_PROVIDER || 'none' }}
+      AIQ_LLM_MODEL: ${{ vars.AIQ_LLM_MODEL }}
+      AIQ_LLM_BASE_URL: ${{ vars.AIQ_LLM_BASE_URL }}
+      AIQ_LLM_API_KEY: ${{ secrets.AIQ_LLM_API_KEY }}
+      AIQ_TEST_EXECUTOR: ${{ vars.AIQ_TEST_EXECUTOR || 'none' }}
+      AIQ_POST: ${{ inputs.post && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: Restore intelligence index (built by refresh-index.yml)
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .aiqip/index
+          key: aiqip-index-${{ github.run_id }}
+          restore-keys: aiqip-index-
+      - name: Build index if no cache
+        if: steps.cache.outputs.cache-matched-key == ''
+        run: |
+          aiqip index code || echo "::warning::code index failed (token access to dev repos?)"
+          aiqip index tests || echo "::warning::test index failed (token access to automation repo?)"
+          aiqip index defects || echo "::warning::defect index skipped (Jira not configured?)"
+      - name: Doctor
+        run: aiqip doctor
+      - name: Run PR quality intelligence
+        run: |
+          aiqip pr-quality --repo "${{ inputs.repo }}" --pr "${{ inputs.pr_number }}" \
+            --out report ${{ inputs.execute && '--execute' || '' }} \
+            --details-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            | tee report/stdout.md
+      - name: Job summary
+        if: always()
+        run: test -f report/pr-quality-report.md && cat report/pr-quality-report.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr-quality-report-${{ inputs.pr_number }}
+          path: report/

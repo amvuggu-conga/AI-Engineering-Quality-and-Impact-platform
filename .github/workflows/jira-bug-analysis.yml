@@ -1,0 +1,57 @@
+# Use case 2 - Customer-Aware Agentic AI.
+# Triggered by Jira Automation ("Send web request" -> GitHub repository_dispatch, see docs/jira-automation.md)
+# or manually. Dry run unless `post` is true (manual) or the dispatch payload sets "post": true.
+name: Jira Bug Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_key:
+        description: "Jira issue key (e.g. CONTRACTS-12345)"
+        required: true
+      post:
+        description: "Post the analysis comment to Jira (otherwise dry run)"
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [jira-bug-created]
+
+permissions:
+  contents: read
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ISSUE_KEY: ${{ inputs.issue_key || github.event.client_payload.issue_key }}
+      AIQ_POST: ${{ (inputs.post || github.event.client_payload.post == true) && 'true' || 'false' }}
+      AIQ_GITHUB_TOKEN: ${{ secrets.AIQ_GITHUB_TOKEN }}
+      JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL || 'https://conga.atlassian.net' }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      AIQ_LLM_PROVIDER: ${{ vars.AIQ_LLM_PROVIDER || 'none' }}
+      AIQ_LLM_MODEL: ${{ vars.AIQ_LLM_MODEL }}
+      AIQ_LLM_BASE_URL: ${{ vars.AIQ_LLM_BASE_URL }}
+      AIQ_LLM_API_KEY: ${{ secrets.AIQ_LLM_API_KEY }}
+    steps:
+      - name: Validate issue key
+        run: '[[ "$ISSUE_KEY" =~ ^[A-Z][A-Z0-9]+-[0-9]+$ ]] || { echo "invalid issue key"; exit 1; }'
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - uses: actions/cache/restore@v4
+        with:
+          path: .aiqip/index
+          key: aiqip-index-${{ github.run_id }}
+          restore-keys: aiqip-index-
+      - run: aiqip bug-analysis --issue "$ISSUE_KEY" --out report
+      - if: always()
+        run: test -f report/jira-analysis.md && cat report/jira-analysis.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jira-analysis-${{ env.ISSUE_KEY }}
+          path: report/

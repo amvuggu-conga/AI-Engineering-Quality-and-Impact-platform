@@ -1,0 +1,41 @@
+# Nightly rebuild of the Unified AI Engineering Intelligence Layer (code, tests, defects, docs).
+name: Refresh Intelligence Index
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      docs:
+        description: "Also re-crawl documentation.conga.com (slow)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      AIQ_GITHUB_TOKEN: ${{ secrets.AIQ_GITHUB_TOKEN }}
+      JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL || 'https://conga.atlassian.net' }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - run: aiqip index code
+      - run: aiqip index tests
+      - run: aiqip index defects || echo "::warning::defect index skipped (Jira credentials or dashboard access)"
+      - if: inputs.docs
+        run: aiqip index docs --fetch-content --max-pages 2000
+      - run: aiqip doctor
+      - uses: actions/cache/save@v4
+        with:
+          path: .aiqip/index
+          key: aiqip-index-${{ github.run_id }}
