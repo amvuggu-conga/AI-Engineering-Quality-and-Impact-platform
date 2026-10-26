@@ -37,7 +37,7 @@ class KnowledgeBase:
     @classmethod
     def load(cls, path: str | Path | None) -> "KnowledgeBase":
         candidates = [Path(path)] if path else []
-        candidates.append(BUNDLED_INDEX)
+        candidates += [BUNDLED_INDEX, Path.cwd() / "data" / "knowledge" / "clm-docs-index.json"]
         for p in candidates:
             if p.exists():
                 return cls(json.loads(p.read_text()))
